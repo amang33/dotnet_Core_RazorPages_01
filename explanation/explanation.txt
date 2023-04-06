@@ -1,0 +1,61 @@
+작업환경 : Visual Studio Code
+
+터미널
+- dotnet new webapp -o projectName
+    : dotnet new : 새로운 프로젝트 생성 (Razor Pages)
+- code -r projectName
+    : Visual Studio Code의 현재 인스턴스에 ProjectName 폴더를 open
+- dotnet dev-certs https --trust
+    : HTTPS 개발 인증서를 신뢰
+- dotnet aspnet-codegenerator razorpage -m Movie -dc RazorPagesMovie.Data.RazorPagesMovieContext -udl -outDir Pages/Movies --referenceScriptLibraries --databaseProvider sqlite
+    : -m 모델의 이름
+    : -dc 네임스페이스를 포함하여 사용할 DbContext 클래스
+    : -udl 기본 레이아웃을 사용
+    : -outDir 뷰를 만들기 위한 상태 출력 폴더 경로
+    : --referenceScriptLibraries Edit 및 Create 페이지에 _ValidationScriptsPartial을 추가
+- dotnet ef migrations add InitialCreate
+    : 초기 데이터베이스 스키마를 만드는 코드를 생성
+        - 이 스키마는 DbContext에 지정된 모델을 기반으로 함
+        - InitialCreate 인수는 마이그레이션 이름을 지정하는 데 사용
+- dotnet ef database update
+    : 적용되지 않은 마이그레이션에서 Up 메서드를 실행
+        - 이 경우엔 Update > Migrations/<time-stamp>_InitialCreate.cs 파일에서 Up 메서드를 실행하여 데이터베이스를 생성
+
+port 확인
+- Properties/launchSettings.json
+    : "applicationUrl": PORTNumber 확인 가능
+
+Pages 폴더
+- .cshtml
+    : Razor 구문을 사용, C# 및 html 태그를 포함
+- .cshtml.cs
+    : 페이지 이벤트를 처리하는 C#코드가 있음
+
+wwwroot 폴더
+- HTML, Javascript, CSS 파일과 같은 정적 자산을 포함.
+
+Program.cs 파일
+    : WebApplicationBuilder 를 만들고, DI(종속성 주입) 컨테이너에 Razor 페이지 지원을 추가, 앱을 빌드
+- app.UseHttpsRedirection();
+    : HTTP 요청을 HTTPS로 리디렉션
+- app.UseStaticFiles();
+    : HTML, CSS, Image, Javscript와 같은 정적 파일이 제공되도록 설정.
+- app.UseRouting();
+    : 경로 일치를 미들웨어 파이프라인에 추가
+        - 미들웨어 : HTTP 요청을 받아 처리한 후, 다음 미들웨어로 처리 결과를 전달, 이를 반복하여 HTTP 요청의 처리 과정을 완료함.
+        - 파이프라인 : 여러 개의 작은 단계들을 연결하여 전체적인 작업을 수행하는 구조.
+- app.MapRazorPages();
+    : Razor Pages에 대한 엔드포인트 라우팅을 구성
+        - 엔드포인트 : 클라이언트가 요청을 보낼 수 있는 URL 경로, 각 엔드포인트는 특정한 HTTP 메서드(GET, POST, PUT, DELETE 등)와 매핑됨.
+- app.UseAuthorization();
+    : 사용자에게 보안 리소스에 엑세스할 수 있는 권한을 부여. (현재 프로젝트에는 권한 부여를 사용하지 않아 제거 가능)
+- app.run();
+    : 앱을 실행
+-RazorPagesMovieContext
+    : Microsoft.EntityFrameworkCore.DbContext에서 파생
+    : 데이터 모델에 포함되는 엔터티를 지정
+    : Movie 모델에 대한 EF Core 기능(예: 만들기, 읽기, 업데이트, 삭제)을 조정
+- using (var scope = app.Services.CreateScope()) {}
+    : DI(종속성 주입) 컨테이너에서 데이터베이스 컨텍스트 인스턴스를 가져옴
+    : seedData.Initialize 메서드를 호출하여 데이터베이스 컨텍스트 인스턴스에 전달
+    : 시드 메서드가 완료되면 컨텍스트를 삭제, using 문은 컨텍스트가 삭제되도록 함

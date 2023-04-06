@@ -1,0 +1,70 @@
+- migration
+    - 데이터베이스 마이그레이션 : 데이터베이스 스키마를 변경하기 위해 필요한 SQL 스크립트를 자동으로 생성하고 실행하는 과정, 개발자가 수동으로 작성하거나 데이터베이스 관리자에게 변경작업을 요청하는 번거로움을 줄일 수 있음.
+
+- Entity Framework Core
+    : 객체 관계 매핑 프레임워크
+        - 사용시 데이터베이스와 애플리케이션 모델 간의 매핑을 쉽게 구현할 수 있음
+        - 데이터베이스에 대한 추상화 계층을 제공
+            + 데이터베이스와 직접 상호작용 하지 않고, 데이터베이스를 조작하는 대신 C# 코드를 사용하여 데이터를 쿼리화, 저장할 수 있음
+        - 다양한 데이터베이스에 대한 드라이버를 지원함
+        - 
+
+터미널
+- dotnet tool install --global dotnet-aspnet-codegenerator
+    : 코드를 자동으로 생성해주는 도구
+        + 컨트롤러, 모델, 뷰 등의 코드를 자동으로 생성
+    : --global
+        - 전역으로 설치, 설치후 dotnet-aspnet-codegenerator 명령어를 사용하여 도구를 실행할 수 있음
+- dotnet tool install --global dotnet-ef
+    : Entity Framework Core의 명령줄 도구
+        + 데이터베이스 마이그레이션 및 데이터베이스 스키마 생성, 데이터베이스 초기화 등의 작업을 수행 가능
+- dotnet add package Microsoft.EntityFrameworkCore.Design
+    : Entity Framework Core 애플리케이션에서 명령줄 도구를 사용하여 데이터베이스 마이그레이션을 수행할 때 필요한 라이브러리
+- dotnet add package Microsoft.EntityFrameworkCore.SQLite
+    : SQLite는 경량형 관계형 데이터베이스
+    : 패키지를 현재 프로젝트에 추가하고, 프로젝트 파일 .csproj 에 패키지 참조를 등록
+- dotnet add package Microsoft.VisualStudio.Web.CodeGeneration.Design
+    : 이 패키지를 사용하면 Entity Framework Core 모델을 기반으로 코드를 자동으로 생성
+- dotnet add package Microsoft.EntityFrameworkCore.SqlServer
+    : Entity Framework Core에서 SQL Server 데이터베이스를 사용하기 위한 라이브러리
+- dotnet add package Microsoft.EntityFrameworkCore.Tools
+    : 이 패키지를 설치하면 dotnet ef 명령어를 사용하여 데이터베이스 마이그레이션을 생성하고 적용할 수 있음
+
+
+- ID
+    : Primary key(기본키)
+- ReleaseDate
+    : 필드의 데이터 형식을 지정하는 [DateType] 특성
+        - [DateType] : 사용자가 날짜 필드에 시간 정보를 입력할 필요가 없음, 시간 정보 없이 날짜만 표시
+- string?
+    : 물음표는 속성이 null허용임을 나타냄
+
+-[Column(TypeName = "decimal(18, 2)")]
+    : 데이터 주석을 사용하면 Entity Framework Core에서 Price를 데이터베이스의 통화에 올바르게 매핑할 수 있음
+- [Display(Name = "Release Date")]
+    : 특성은 필드의 표시 이름을 지정
+- [DataType(DataType.Date)]
+    : 특성은 데이터 형식(Date)을 지정, 필드에 저장된 시간 정보는 표시되지 않음
+
+- Rating [추가 필드]
+    : 필드 추가 후 데이터베이스가 업데이트될 때까지 앱은 작동하지 않음
+        - 1. 새 모델 클래스 스키마를 사용하여 Entity Framwork를 자동으로 삭제하고 데이터베스를 다시 만드는 방법
+            - 장점 : 개발 초기 단계에서 편리하게 그리고 개발자는 모델 및 데이터베이스 스키마를 함께 개발 할 수 있음
+            - 단점 : 데이터베이스의 기존 데이터를 잃게 됨
+        - 2. 모델 클래스와 일치하도록 기존 데이터베이스의 스키마를 명시적으로 수정
+            - 장점 : 데이터가 유지됨
+            - 변경을 수동으로 수행하거나 데이터베이스 변경 스크립트를 만들어 수행
+        - 3. Code First 마이그레이션을 사용하여 데이터베이스 스키마를 업데이트
+    : 지금 프로젝트의 경우 3번을 사용
+
+- [Required] 및 [MinimumLength]
+    : 속성에 값이 있어야 함을 나타냄 (not null)
+        - 사용자는 공백을 입력하여 이 유효성 검사를 충족할 수 있음
+- [RegularExpression]
+    : 입력할 수 있는 문자를 제한하는 데 사용
+        - genre : 첫 번째 문자는 대문자, 문자만 사용가능, 숫자와 특수 문자는 허용되지 않지만 공백은 허용
+        - Rating : 첫 번째 문자는 대문자, 이어진 공백에서는 특수 문자와 숫자가 허용
+- [Range]
+    : 특성은 값을 지정된 범위 내로 제한
+- [StringLength]
+    : 문자열 속성의 최대 길이와, 필요에 따라 최소 길이를 설정

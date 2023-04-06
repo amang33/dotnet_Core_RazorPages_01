@@ -1,0 +1,85 @@
+- Index.cshtml.cs
+    : Razor Pages는 PageModel에서 파생, 일반적으로 PageModel 파생 클래스의 이름은 PageNameModel로 지정
+        ex) 인덱스 페이지의 이름은 IndexModel로 지정
+    : RazorPagesMovieContext
+        - 생성자는 종속성 주입을 사용하여 RazorPagesMovieContext를 페이지에 추가
+    : OnGetAsync 
+        - 페이지에 대한 GET 요청을 만들면 OnGetAsync 메서드가 Razor Page에 동영상 목록을 반환
+        - Razor 페이지에서 OnGetAsync 또는 OnGet을 호출하여 페이지 상태를 초기화, 이 경우 OnGetAsync는 동영상 목록을 가져와 표시
+        - OnGetAsync 메서드의 첫 번째 줄은 동영상을 선택하는 LINQ 쿼리를 만듬
+    : onGet
+        - onGet 이 void를 반환하거나 OnGetAsync가 Task를 반환하면 return 문이 사용되지 않음
+        - 반환 형식이 IActionResult 또는 Task<IActionResult>이면 반환 문을 제공, 예를 들어 Pages/Movies/Create.cshtml.cs OnPostAsync 메서드임
+    : SearchString
+        - 사용자가 검색 텍스트 상자에 입력하는 텍스트를 포함합니다. SearchString에는 [BindProperty] 특성이 있음
+        - [BindProperty]는 양식 값 및 쿼리 문자열을 속성과 동일한 이름으로 바인딩
+        - [BindProperty(SupportsGet = true)]는 HTTP GET 요청을 바인딩하는 데 필요
+        - 속성이 Null 또는 비어 있는 경우 영화 쿼리는 검색 문자열에 대해 필터링하도록 수정
+    : Genres
+        - 장르 목록을 포함
+        - Genres를 통해 사용자는 목록에서 장르를 선택할 수 있음
+        - SelectList는 using Microsoft.AspNetCore.Mvc.Rendering; 필요
+    : MovieGenre
+        - 사용자가 선택하는 특정 장르를 포함 
+        ex) "서부 영화"
+    : s => s.Title.Contains()
+        - 람다 식, 메서드 기반 LINQ 쿼리에서 Where 메서드 또는 Contains와 같은 표준 쿼리 연산자 메서드의 인수로 사용
+        - LINQ 쿼리는 정의될 때 또는 Where, Contains 또는 OrderBy와 같은 메서드를 호출하여 수정될 때 실행되지 않음, 대신 쿼리 실행이 지연
+        - 실현된 값이 반복되거나 ToListAsync 메서드가 호출될 때까지 식의 계산이 지연
+
+- Index.cshtml
+    : Razor
+        - Razor는 HTML에서 C# 또는 Razor 관련 태그로 전환될 수 있음, @기호 뒤에 Razor 예약 키워드가 사용되면 이 기호는 Razor 관련 태그로 전환 이외의 경우는 C#
+    : @model 지시문
+        - Razor Page에 전달되는 모델 형식을 지정, Razor Page에서 PageModel파생 클래스를 사용할 수 있게 만들어줌, 모델은 페이지에서 @Html.DisplayNameFor 및 @Html.DisplayForHTML 도우미에서 사용
+    : @Html.DisplayNameFor(model => model.Movie[0].Title)
+        - DisplayNameFor HTML 도우미는 람다 식에서 참조되는 Title 속성을 검사하여 표시 이름을 확인
+        - 람다 식은 계산되는 것이 아니라 검사됨
+        - 즉, model, model.Movie 또는 model.Movie[0]가 null이거나 비어 있을 경우 액세스 위반이 없음
+        - 람다 식이 계산될 경우(예: @Html.DisplayFor(modelItem => item.Title) 사용) 모델의 속성 값이 계산
+    : <a asp-page="./Edit" asp-route-id="@item.ID">Edit</a>    -->    <a href="/Movies/Edit?id=1">Edit</a>
+        - 태그 도우미를 사용하면 Razor 파일에서 HTML 요소를 만들고 렌더링하는 데 서버 쪽 코드를 사용할 수 있음
+    : @page "{id:int?}"
+        - 정수를 포함하지 않는{id:int} 경로 템플릿이 있는 페이지에 대한 요청은 HTTP 404(찾을 수 없음) 오류를 반환
+        - ID를 옵션으로 설정하려면 경로 제약 조건에 ?를 추가
+
+- Create.cshtml.cs
+    : OnGet
+        - OnGet 메서드는 페이지에 필요한 상태를 초기화
+        - Create 페이지에는 초기화할 상태가 없음 return Page();
+        - Page 메서드는 Create.cshtml 페이지를 렌더링하는 PageResult 개체를 만듬
+        - Movie 속성은 BindProperty 특성을 사용하여 모델 바인딩을 옵트인함
+    : 모델 오류가 있는 경우
+        - 폼과 게시된 모든 폼 데이터가 다시 표시
+        - 대부분의 모델 오류는 폼이 게시되기 전 클라이언트 쪽에서 catch할 수 있음
+    : 모델 오류가 없는 경우
+        - 데이터 저장
+        - 브라우저가 인덱스 페이지로 리디렉션
+
+- Create.cshtml
+    : <form method="post"> 요소는 폼 태그 도우미로써 위조 방지 토큰이 자동으로 포함됨
+    : 스캐폴딩 엔진은 ID를 제외하고 다음과 비슷한 모델에서 필드마다 Razor 태그를 생성
+    : 유효성 검사 태그 도우미
+        - <div asp-validation-summary 및 <span asp-validation-for는 유효성 검사 오류를 표시
+    : 레이블 태그 도우미
+        - <label asp-for="Movie.속성" class="control-label"></label>는 각 속성에 대한 레이블 캡션 및 for 특성을 생성
+    : 입력 태그 도우미
+        - <input asp-for="Movie.Title" class="form-control">는 DataAnnotations 특성을 사용하고 클라이언트 쪽의 jQuery 유효성 검사에 필요한 HTML 특성을 생성
+
+- edit.cshtml.cs
+    : OnPostAsync
+        - 한 클라이언트가 영화를 삭제하고 다른 클라이언트가 영화 변경 내용을 게시하는 경우 위의 코드는 동시성 예외를 검색
+    : catch 테스트
+        - 1. catch (DbUpdateConcurrencyException)에서 중단점을 설정
+        - 2. 동영상에 대한 편집을 선택하고, 변경하지만 저장을 입력하지 않음
+        - 3. 다른 브라우저 창에서 동일한 동영상에 대한 삭제 링크를 선택한 다음 동영상을 삭제
+        - 4. 이전 브라우저 창에서 동영상에 변경 내용을 게시
+    : Movies/Edit 페이지(예: https://localhost:5001/Movies/Edit/3)에 HTTP GET 요청을 하는 경우
+        - OnGetAsync 메서드는 데이터베이스에서 동영상을 가져오고 Page 메서드를 반환
+        - Page 메서드는 Pages/Movies/Edit.cshtmlRazor 페이지를 렌더링, Pages/Movies/Edit.cshtml 파일은 영화 모델을 페이지에서 사용할 수 있도록 하는 모델 지시문 @model RazorPagesMovie.Pages.Movies.EditModel을 포함
+        - 편집 양식은 동영상에서 값으로 표시
+    : 동영상/편집 페이지가 게시될 때
+        - 페이지에서 양식 값은 Movie 속성으로 바인딩됩니다. [BindProperty] 특성은 모델 바인딩을 활성화
+        - [BindProperty] public Movie Movie { get; set; }
+        - 모델 상태에 오류가 있는 경우(예: ReleaseDate를 날짜로 변환할 수 없는 경우) 양식은 제출된 값으로 다시 표시
+        - 모델 오류가 없는 경우 동영상이 저장
